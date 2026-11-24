@@ -17,12 +17,34 @@ class UserTest < ActiveSupport::TestCase
     assert_equal "u-tokyo.ac.jp", user.university_domain
   end
 
-  test "maps waseda and keio addresses, including subdomains, to the exception domain" do
-    waseda = User.create!(email: "student@fuji.waseda.jp", password: "password")
-    keio = User.create!(email: "student@keio.jp", password: "password")
+  test "maps confirmed non-ac.jp student addresses to the exception domain" do
+    {
+      "student@aoyama.jp" => "aoyama.jp",
+      "student@chiba-u.jp" => "chiba-u.jp",
+      "student@jindai.jp" => "jindai.jp",
+      "student@keio.jp" => "keio.jp",
+      "student@senshu-u.jp" => "senshu-u.jp",
+      "student@toyo.jp" => "toyo.jp",
+      "student@fuji.waseda.jp" => "waseda.jp",
+      "student@ynu.jp" => "ynu.jp"
+    }.each do |email, domain|
+      user = User.create!(email: email, password: "password")
 
-    assert_equal "waseda.jp", waseda.university_domain
-    assert_equal "keio.jp", keio.university_domain
+      assert_equal domain, user.university_domain, email
+    end
+  end
+
+  test "keeps an ac.jp address separate from the same university's exception domain" do
+    user = User.create!(email: "student@aoyama.ac.jp", password: "password")
+
+    assert_equal "aoyama.ac.jp", user.university_domain
+  end
+
+  test "rejects a domain that only resembles an exception" do
+    user = User.new(email: "student@not-toyo.jp", password: "password")
+
+    assert_not user.valid?
+    assert_includes user.errors[:email], "must be a university email address"
   end
 
   test "derives the university from the email when a domain is supplied directly" do

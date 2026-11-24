@@ -2,7 +2,17 @@
 
 class User < ApplicationRecord
   # 学生メールが .ac.jp ではない大学。保存する識別子は、このドメインそのもの。
-  EXCEPTION_DOMAINS = %w[waseda.jp keio.jp].freeze
+  # 同じ大学が .ac.jp も配っている場合、そちらの識別子とは分けたままにする。
+  EXCEPTION_DOMAINS = %w[
+    aoyama.jp
+    chiba-u.jp
+    jindai.jp
+    keio.jp
+    senshu-u.jp
+    toyo.jp
+    waseda.jp
+    ynu.jp
+  ].freeze
 
   has_secure_password
 
